@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>誠家團隊 好禮獎不完</title>
+
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --text: #1d1d1f;
+      --text-dim: #6e6e73;
+      --accent: #0071e3;
+      --accent-press: #0062c4;
+      --brand: #c8283f;
+      --gold: #d8ac5c;
+      --line: rgba(0, 0, 0, 0.09);
+      --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.20);
+      --danger: #ff3b30;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
+      margin: 0;
+      height: 100vh;
+      min-height: 100vh;
+      max-height: 100vh;
+      height: 100dvh;
+      min-height: 100dvh;
+      max-height: 100dvh;
+      overflow: auto;
+      gap: clamp(4px, 1.4vh, 14px);
+      gap: clamp(4px, 1.4dvh, 14px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .eyebrow-tag {
+      display: inline-block;
+      background: #ececef;
+      color: var(--text-dim);
+      font-size: clamp(11px, 2.6vw, 13px);
+      font-weight: 500;
+      padding: clamp(4px, 1vh, 7px) 16px;
+      border-radius: 999px;
+      margin: 0;
+      flex: none;
+      animation: rise 0.6s ease both;
+    }
+
+    h1 {
+      font-size: clamp(22px, 6.6vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0;
+      text-align: center;
+      color: var(--brand);
+      flex: none;
+      animation: rise 0.6s 0.06s ease both;
+    }
+
+    .subtitle {
+      color: var(--text-dim);
+      font-size: clamp(12px, 3vw, 16px);
+      margin: 0;
+      text-align: center;
+      flex: none;
+      animation: rise 0.6s 0.12s ease both;
+    }
+
+    .spin-hint {
+      color: var(--text-dim);
+      font-size: 12px;
+      margin: 0;
+      flex: none;
+      animation: rise 0.6s 0.34s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ---------- 轉盤 ---------- */
+    .wheel-container {
+      position: relative;
+      width: min(78vw, 48vh, 460px);
+      height: min(78vw, 48vh, 460px);
+      width: min(78vw, 48dvh, 460px);
+      height: min(78vw, 48dvh, 460px);
+      flex: none;
+      margin: clamp(4px, 1vh, 14px) 0;
+      margin: clamp(4px, 1dvh, 14px) 0;
+      animation: rise 0.75s 0.18s ease both;
+    }
+
+    .wheel-glow {
+      position: absolute;
+      inset: -22px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg,
+        #FF6B6B, #FFD43B, #4ECDC4, #5C7CFA, #9775FA, #FF922B, #FF6B6B);
+      filter: blur(26px);
+      opacity: 0.35;
+      z-index: 0;
+      animation: rotate 16s linear infinite;
+    }
+
+    @keyframes rotate { to { transform: rotate(360deg); } }
+
+    /* 靜止不轉動的外殼，負責圓角陰影 — 避免 iOS Safari 在
+       transform 動畫期間，圓角元素疊加陰影造成的四角閃爍/失效問題 */
+    .wheel-shell {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: 50%;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16), 0 3px 10px rgba(0, 0, 0, 0.08);
+      pointer-events: none;
+    }
+
+    .pointer {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      width: 40px;
+      height: 52px;
+      background: var(--text);
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      border-radius: 5px;
+      z-index: 10;
+      transform: translateX(-50%) rotate(0deg);
+      transform-origin: 50% 92%;
+      transition: transform 0.13s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.28));
+    }
+
+    canvas#wheel {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: block;
+      transform: rotate(0deg);
+    }
+
+    /* 固定不隨轉盤旋轉的中心標籤 */
+    .wheel-hub {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.25;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: clamp(9px, 2.1vw, 14px);
+      letter-spacing: 0.03em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ---------- 按鈕 ---------- */
+    .btn {
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 500;
+      border: none;
+      border-radius: 980px;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.2s ease;
+      flex: none;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: clamp(12px, 2.2vh, 18px) clamp(40px, 10vw, 62px);
+      padding: clamp(12px, 2.2dvh, 18px) clamp(40px, 10vw, 62px);
+      font-size: clamp(16px, 4vw, 20px);
+      box-shadow: 0 6px 20px rgba(0, 113, 227, 0.28);
+      animation: rise 0.6s 0.28s ease both;
+    }
+
+    .btn-primary:not(:disabled) { animation: breathe 2.6s ease-in-out infinite; }
+    .btn-primary:hover { background: var(--accent-press); }
+    .btn-primary:disabled {
+      background: #c7c7cc;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+      animation: none;
+    }
+    .btn-primary.is-spinning { animation: none; }
+
+    @keyframes breathe {
+      0%, 100% { box-shadow: 0 6px 20px rgba(0, 113, 227, 0.28); }
+      50%      { box-shadow: 0 12px 34px rgba(0, 113, 227, 0.46); }
+    }
+
+    .admin-toggle {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 0px) + 14px);
+      right: calc(env(safe-area-inset-right, 0px) + 14px);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border: 1px solid var(--line);
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 980px;
+      cursor: pointer;
+      z-index: 40;
+    }
+    .admin-toggle:hover { background: rgba(255, 255, 255, 0.98); }
+
+    /* ---------- 中獎揭曉 ---------- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+
+    .reveal-bg {
+      position: fixed;
+      left: var(--rx, 50%);
+      top: var(--ry, 42%);
+      width: 26px;
+      height: 26px;
+      margin: -13px 0 0 -13px;
+      border-radius: 50%;
+      background: var(--accent);
+      transform: scale(0);
+      transition: transform 0.72s cubic-bezier(0.66, 0, 0.34, 1);
+      z-index: 1;
+    }
+    .overlay.reveal-go .reveal-bg { transform: scale(170); }
+
+    .modal-card {
+      position: relative;
+      z-index: 2;
+      background: var(--surface);
+      padding: 40px 34px 30px;
+      border-radius: 30px;
+      text-align: center;
+      width: 380px;
+      max-width: 88vw;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: scale(0.8) translateY(12px);
+      transition: opacity 0.4s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .overlay.card-in .modal-card { opacity: 1; transform: none; }
+
+    .modal-card .eyebrow {
+      color: var(--text-dim);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    .modal-card h2 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    #prizeImage {
+      display: none;
+      width: 100%;
+      max-height: 260px;
+      object-fit: contain;
+      margin: 20px auto 6px;
+      border-radius: 18px;
+      background: var(--bg);
+    }
+    #prizeName {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--brand);
+      margin: 16px 0 26px;
+    }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px 40px;
+      width: 100%;
+    }
+    .btn-secondary:hover { background: #ececec; }
+
+    #fx {
+      position: fixed;
+      inset: 0;
+      z-index: 52;
+      pointer-events: none;
+    }
+
+    /* ---------- 後台 ---------- */
+    .panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 430px;
+      max-width: 92vw;
+      background: rgba(250, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(30px);
+      -webkit-backdrop-filter: saturate(180%) blur(30px);
+      box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12);
+      z-index: 60;
+      transform: translateX(100%);
+      transition: transform 0.44s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+    .panel.open { transform: translateX(0); }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 { font-size: 20px; font-weight: 600; margin: 0; }
+
+    .icon-btn {
+      background: rgba(0, 0, 0, 0.05);
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 15px;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: rgba(0, 0, 0, 0.1); }
+
+    .panel-scroll { flex: 1; overflow-y: auto; padding: 18px 22px; }
+
+    .pass-gate {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 40px 8px;
+      text-align: center;
+    }
+    .pass-gate p { margin: 0; color: var(--text-dim); font-size: 15px; }
+
+    .field, .pass-gate input {
+      font-family: inherit;
+      font-size: 15px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      color: var(--text);
+      width: 100%;
+      outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+    .field:focus, .pass-gate input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    }
+    .err { color: var(--danger) !important; font-size: 13px !important; }
+
+    .field-label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .list-head {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin: 2px 2px 12px;
+    }
+    .list-head span { color: var(--text); font-weight: 600; }
+
+    /* 摺疊獎品卡 */
+    .prize-row {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .prize-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 14px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+    }
+    .prize-summary .badge {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text-dim);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .prize-summary .p-title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prize-summary .p-pct {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+    .prize-summary .chev {
+      color: var(--text-dim);
+      font-size: 11px;
+      transition: transform 0.25s;
+    }
+    .prize-row.open .chev { transform: rotate(180deg); }
+
+    .prize-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.32s ease;
+    }
+    .prize-row.open .prize-detail { max-height: 460px; }
+
+    .detail-inner {
+      padding: 2px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .detail-inner label {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .detail-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2px;
+    }
+    .detail-foot .live-pct { font-size: 13px; color: var(--text-dim); }
+    .del-btn {
+      background: rgba(255, 59, 48, 0.1);
+      color: var(--danger);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .del-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .ghost-btn {
+      font-family: inherit;
+      background: none;
+      border: 1px dashed var(--line);
+      color: var(--accent);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 12px;
+      width: 100%;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .ghost-btn:hover { background: rgba(0, 113, 227, 0.05); }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 18px 2px 4px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    .total-row span {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .hint {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin: 4px 2px 0;
+      line-height: 1.55;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 10px;
+      padding: 16px 22px 22px;
+      border-top: 1px solid var(--line);
+    }
+    .panel-actions button {
+      flex: 1;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+    }
+    .panel-actions .primary-btn { background: var(--accent); color: #fff; }
+    .panel-actions .primary-btn:hover { background: var(--accent-press); }
+    .panel-actions .plain-btn { background: rgba(0, 0, 0, 0.05); color: var(--text); }
+    .panel-actions .plain-btn:hover { background: rgba(0, 0, 0, 0.1); }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 55;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .backdrop.show { opacity: 1; pointer-events: auto; }
+
+    [hidden] { display: none !important; }
+  </style>
+  <script>
+    window.addEventListener('error', function (e) {
+      var box = document.getElementById('debugError');
+      if (!box) return;
+      box.hidden = false;
+      box.textContent += '錯誤: ' + e.message + '\n來源: ' + (e.filename || '') + ' 第' + (e.lineno || '?') + '行\n\n';
+    });
+  </script>
+</head>
+
+<body>
+
+  <div id="debugError" hidden style="position:fixed;left:10px;right:10px;bottom:10px;z-index:999;background:#fff3f3;border:1px solid #ffb3b3;color:#b00020;font:12px/1.5 monospace;padding:10px;border-radius:10px;white-space:pre-wrap;max-height:45vh;overflow:auto;"></div>
+
+  <button class="admin-toggle" id="adminToggle">⚙ 後台</button>
+
+  <p class="eyebrow-tag" id="eyebrowTag">誠家團隊抽獎活動</p>
+  <h1>好禮獎不完 <span aria-hidden="true">🎁</span></h1>
+  <p class="subtitle">按下按鈕，看看今天的幸運好禮是什麼！</p>
+
+  <div class="wheel-container">
+    <div class="wheel-glow"></div>
+    <div class="wheel-shell"></div>
+    <div class="pointer"></div>
+    <canvas id="wheel" width="700" height="700"></canvas>
+    <div class="wheel-hub"><span>LUCKY</span><span>DRAW</span></div>
+  </div>
+
+  <button class="btn btn-primary" id="spinBtn" type="button">立即抽獎</button>
+  <p class="spin-hint">每次點擊只會進行一次抽獎</p>
+
+  <canvas id="fx"></canvas>
+
+  <!-- 中獎揭曉 -->
+  <div class="overlay" id="resultModal">
+    <div class="reveal-bg" id="revealBg"></div>
+    <div class="modal-card">
+      <p class="eyebrow">Congratulations</p>
+      <h2>恭喜中獎</h2>
+      <img id="prizeImage" src="" alt="獎品圖片" onerror="this.style.display='none'">
+      <div id="prizeName"></div>
+      <button class="btn btn-secondary" id="closeResult">完成</button>
+    </div>
+  </div>
+
+  <!-- 後台 -->
+  <div class="backdrop" id="panelBackdrop"></div>
+  <aside class="panel" id="adminPanel">
+    <div class="panel-head">
+      <h2>後台設定</h2>
+      <button class="icon-btn" id="closeAdmin">✕</button>
+    </div>
+
+    <div class="panel-scroll">
+      <div class="pass-gate" id="passGate">
+        <p>請輸入通行碼以進入後台</p>
+        <input id="passInput" type="password" inputmode="numeric" maxlength="12" placeholder="通行碼">
+        <button class="ghost-btn" id="passBtn" style="border-style:solid;margin-top:0;">進入</button>
+        <p class="err" id="passErr" hidden>通行碼錯誤，請再試一次</p>
+      </div>
+
+      <div id="adminBody" hidden>
+        <div class="list-head" style="margin-bottom:6px;">頁面標題</div>
+        <label class="field-label">
+          標籤文字（顯示在主標題上方）
+          <input class="field" id="titleInput" type="text" maxlength="30" placeholder="誠家團隊抽獎活動">
+        </label>
+        <button class="ghost-btn" id="saveTitle" style="margin:8px 0 18px;">儲存標題</button>
+
+        <div class="list-head">共 <span id="prizeCount">0</span> 個獎品，點一下展開設定</div>
+        <div id="prizeList"></div>
+        <button class="ghost-btn" id="addPrize">＋ 新增獎品</button>
+
+        <div class="total-row">
+          <span style="font-size:14px;font-weight:400;color:var(--text-dim);">目前機率權重總和</span>
+          <span id="totalPct">100</span>
+        </div>
+        <p class="hint">
+          以「權重」輸入機率，實際中獎機率依每個獎品下方顯示的百分比計算；
+          按「儲存並套用」時會自動換算為總和 100%。
+          轉盤扇形一律等分顯示，前端不會透露任何中獎機率。
+        </p>
+      </div>
+    </div>
+
+    <div class="panel-actions" id="adminActions" hidden>
+      <button class="plain-btn" id="resetPrizes">重設為預設</button>
+      <button class="primary-btn" id="savePrizes">儲存並套用</button>
+    </div>
+  </aside>
+
+  <script>
+    // =========================================
+    // 設定
+    // =========================================
+    const PASSCODE = '1234';                 // ← 後台通行碼，可自行修改
+    const STORAGE_KEY = 'chengjia_lottery_v3';
+    const TITLE_KEY = 'chengjia_lottery_title_v1';
+    const DEFAULT_TITLE = '誠家團隊抽獎活動';
+
+    const DEFAULT_PRIZES = [
+      { name: 'TCL65吋電視機', prob: 1, image: 'https://i.postimg.cc/sX3BjF36/dian-shi.jpg' },
+      { name: 'SHARP電子鎖', prob: 2, image: 'https://i.postimg.cc/Pr0PLvtb/dian-zi-suo.jpg' },
+      { name: 'DYSON吹風機', prob: 3, image: 'https://i.postimg.cc/tRMh5TqR/chui-feng-ji.jpg' },
+      { name: 'SAMSUNG無線吸塵器', prob: 4, image: 'https://i.postimg.cc/Dy0xvHZx/xi-chen-qi.jpg' },
+      { name: 'LG掃地機器人', prob: 5, image: 'https://i.postimg.cc/kX2y3S1b/sao-de-ji-qi-ren.jpg' },
+      { name: 'SHARP空氣清淨機', prob: 5, image: 'https://i.postimg.cc/7L89NLNT/kong-qi-qing-jing-ji.jpg' },
+      { name: 'SHARP除濕機', prob: 6, image: 'https://i.postimg.cc/LhF5bGQG/chu-shi-ji.jpg' },
+      { name: 'RECOLTE氣炸烤箱', prob: 10, image: 'https://i.postimg.cc/2SfLcLPj/qi-zha-kao-xiang.jpg' },
+      { name: 'LG微波爐', prob: 27, image: 'https://i.postimg.cc/J4Xpggzg/wei-bo-lu.jpg' },
+      { name: '全聯禮券', prob: 37, image: 'https://i.postimg.cc/NFSfrZwf/li-quan.jpg' }
+    ];
+
+    const COLORS = [
+      '#FF6B6B', '#4ECDC4', '#5C7CFA', '#FFD43B', '#9775FA',
+      '#FF922B', '#20C997', '#748FFC', '#F783AC', '#63E6BE',
+      '#FFA94D', '#3BC9DB', '#B197FC', '#FFE066', '#8CE99A'
+    ];
+
+    // 轉盤幾何
+    const CX = 350, CY = 350, R = 322, HUB = 56;
+
+    // =========================================
+    // 狀態
+    // =========================================
+    let prizes = loadPrizes();
+    let pageTitle = loadTitle();
+    let draft = [];
+    let openIndex = -1;
+    let spinning = false;
+    let currentRotation = 0;
+
+    const num = v => (Number(v) > 0 ? Number(v) : 0);
+
+    function loadPrizes() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (Array.isArray(p) && p.length >= 2) return p;
+        }
+      } catch (e) { /* ignore */ }
+      return DEFAULT_PRIZES.map(p => ({ ...p }));
+    }
+    function persist() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prizes)); } catch (e) { /* ignore */ }
+    }
+    function loadTitle() {
+      try {
+        const raw = localStorage.getItem(TITLE_KEY);
+        if (raw) return raw;
+      } catch (e) { /* ignore */ }
+      return DEFAULT_TITLE;
+    }
+    function persistTitle() {
+      try { localStorage.setItem(TITLE_KEY, pageTitle); } catch (e) { /* ignore */ }
+    }
+
+    // =========================================
+    // 元素
+    // =========================================
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const overlay = document.getElementById('resultModal');
+    const revealBg = document.getElementById('revealBg');
+    const prizeNameEl = document.getElementById('prizeName');
+    const prizeImage = document.getElementById('prizeImage');
+    const pointer = document.querySelector('.pointer');
+    const fx = document.getElementById('fx');
+    const eyebrowTag = document.getElementById('eyebrowTag');
+    eyebrowTag.textContent = pageTitle;
+
+    // =========================================
+    // 扇形計算
+    // =========================================
+    function totalWeight() {
+      return prizes.reduce((s, p) => s + num(p.prob), 0);
+    }
+    // 轉盤扇形一律「等分」，不透露任何中獎機率
+    function segments() {
+      const n = prizes.length;
+      const frac = 1 / n;
+      return prizes.map((p, i) => ({
+        startFrac: i * frac,
+        frac,
+        start: i * frac * 2 * Math.PI,
+        end: (i + 1) * frac * 2 * Math.PI,
+        prize: p
+      }));
+    }
+
+    // =========================================
+    // 圖片預載
+    // =========================================
+    function preloadImages() {
+      prizes.forEach(p => { if (p.image) { const i = new Image(); i.src = p.image; } });
+    }
+
+    // =========================================
+    // 畫轉盤
+    // =========================================
+    function drawWheel(opts) {
+      opts = opts || {};
+      const highlight = opts.highlight == null ? -1 : opts.highlight;
+      const grow = opts.grow || 0;
+      const fade = opts.fade || 0;
+
+      ctx.clearRect(0, 0, 700, 700);
+      const segs = segments();
+      const n = segs.length;
+      const fs = Math.max(14, Math.min(28, 230 / n));
+
+      segs.forEach((s, i) => {
+        const isHi = i === highlight;
+        let r = R, cx = CX, cy = CY;
+        if (isHi) {
+          const mid = (s.start + s.end) / 2;
+          r = R + 22 * grow;
+          cx = CX + Math.cos(mid) * 16 * grow;
+          cy = CY + Math.sin(mid) * 16 * grow;
+        }
+        ctx.globalAlpha = (highlight >= 0 && !isHi) ? (1 - 0.8 * fade) : 1;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, s.start, s.end);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.stroke();
+
+        // 名稱（不顯示百分比）
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((s.start + s.end) / 2);
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        let label = s.prize.name || '';
+        ctx.font = `600 ${isHi ? fs + 3 : fs}px -apple-system,"PingFang TC","Microsoft JhengHei",sans-serif`;
+        const maxW = 232;
+        while (ctx.measureText(label).width > maxW && label.length > 1) label = label.slice(0, -1);
+        if (label !== (s.prize.name || '')) label += '…';
+        ctx.fillStyle = '#1d1d1f';
+        ctx.fillText(label, r - 34, 1);
+        ctx.restore();
+      });
+
+      ctx.globalAlpha = 1;
+
+      // 外圈：金色點綴 + 白色分隔環
+      ctx.beginPath();
+      ctx.arc(CX, CY, R + 5, 0, 2 * Math.PI);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#d8ac5c';
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, 0, 2 * Math.PI);
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      // 中心（文字改由固定不轉動的 .wheel-hub DOM 元素顯示）
+      ctx.beginPath();
+      ctx.arc(CX, CY, HUB, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+      ctx.stroke();
+    }
+
+    // =========================================
+    // 依權重抽獎
+    // =========================================
+    function getRandomPrizeIndex() {
+      const total = totalWeight();
+      if (total <= 0) return Math.floor(Math.random() * prizes.length);
+      const r = Math.random() * total;
+      let sum = 0;
+      for (let i = 0; i < prizes.length; i++) {
+        sum += num(prizes[i].prob);
+        if (r < sum) return i;
+      }
+      return prizes.length - 1;
+    }
+
+    // =========================================
+    // 指針彈跳
+    // =========================================
+    let pointerT;
+    function nudgePointer() {
+      pointer.style.transform = 'translateX(-50%) rotate(-17deg)';
+      clearTimeout(pointerT);
+      pointerT = setTimeout(() => { pointer.style.transform = 'translateX(-50%) rotate(0deg)'; }, 55);
+    }
+
+    // =========================================
+    // 轉動（rAF 緩動，可同步指針彈跳）
+    // =========================================
+    function spin() {
+      if (spinning) return;
+      spinning = true;
+      spinBtn.disabled = true;
+      spinBtn.classList.add('is-spinning');
+
+      const idx = getRandomPrizeIndex();
+      const segs = segments();
+      const s = segs[idx];
+      const prize = prizes[idx];
+      const color = COLORS[idx % COLORS.length];
+
+      const midDeg = (s.startFrac + s.frac / 2) * 360;
+      const from = currentRotation;
+      const to = from + 6 * 360 + (270 - midDeg) - (from % 360);
+      currentRotation = to;
+
+      const dur = 4700;
+      const t0 = performance.now();
+      let lastSeg = -1;
+
+      function frame(now) {
+        let t = (now - t0) / dur;
+        if (t > 1) t = 1;
+        const e = 1 - Math.pow(1 - t, 4);           // easeOutQuart
+        const deg = from + (to - from) * e;
+        canvas.style.transform = `rotate(${deg}deg)`;
+
+        const atTop = ((((270 - deg) % 360) + 360) % 360) / 360;
+        let segNow = 0;
+        for (let i = 0; i < segs.length; i++) {
+          if (atTop >= segs[i].startFrac && atTop < segs[i].startFrac + segs[i].frac) { segNow = i; break; }
+        }
+        if (lastSeg !== -1 && segNow !== lastSeg) nudgePointer();
+        lastSeg = segNow;
+
+        if (t < 1) requestAnimationFrame(frame);
+        else finishSpin(prize, color, idx);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    spinBtn.addEventListener('click', spin);
+
+    // 中獎扇形逐漸放大 → 揭曉畫面
+    function finishSpin(prize, color, idx) {
+      spinBtn.classList.remove('is-spinning');
+      const g0 = performance.now();
+      (function grow(now) {
+        let t = Math.min(1, (now - g0) / 620);
+        const e = 1 - Math.pow(1 - t, 3);
+        drawWheel({ highlight: idx, grow: e, fade: e });
+        if (t < 1) requestAnimationFrame(grow);
+        else revealWin(prize, color);
+      })(g0);
+    }
+
+    function revealWin(prize, color) {
+      const rect = canvas.getBoundingClientRect();
+      overlay.style.setProperty('--rx', (rect.left + rect.width / 2) + 'px');
+      overlay.style.setProperty('--ry', (rect.top + rect.height / 2) + 'px');
+      revealBg.style.background = color;
+      overlay.classList.add('show');
+      void revealBg.offsetWidth;
+      overlay.classList.add('reveal-go');
+
+      setTimeout(() => {
+        prizeNameEl.textContent = `「${prize.name}」`;
+        if (prize.image) {
+          prizeImage.src = prize.image;
+          prizeImage.style.display = 'block';
+        } else {
+          prizeImage.style.display = 'none';
+          prizeImage.src = '';
+        }
+        overlay.classList.add('card-in');
+        confetti(color);
+      }, 650);
+    }
+
+    function closeResult() {
+      overlay.classList.remove('show', 'reveal-go', 'card-in');
+      spinning = false;
+      spinBtn.disabled = false;
+      pointer.style.transform = 'translateX(-50%) rotate(0deg)';
+      drawWheel();
+    }
+    document.getElementById('closeResult').addEventListener('click', closeResult);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeResult(); });
+
+    // =========================================
+    // 彩帶
+    // =========================================
+    function confetti(main) {
+      fx.width = innerWidth;
+      fx.height = innerHeight;
+      const c = fx.getContext('2d');
+      const pal = [main, '#FFD43B', '#4ECDC4', '#FF6B6B', '#5C7CFA', '#ffffff'];
+      const parts = Array.from({ length: 150 }, () => ({
+        x: Math.random() * fx.width,
+        y: -20 - Math.random() * fx.height * 0.4,
+        w: 5 + Math.random() * 7,
+        col: pal[Math.random() * pal.length | 0],
+        vx: -2.5 + Math.random() * 5,
+        vy: 2.5 + Math.random() * 4.5,
+        rot: Math.random() * 6.28,
+        vr: -0.25 + Math.random() * 0.5
+      }));
+      const t0 = performance.now();
+      (function loop(now) {
+        const el = now - t0;
+        c.clearRect(0, 0, fx.width, fx.height);
+        parts.forEach(p => {
+          p.x += p.vx; p.y += p.vy; p.vy += 0.045; p.rot += p.vr;
+          c.save();
+          c.translate(p.x, p.y);
+          c.rotate(p.rot);
+          c.globalAlpha = Math.max(0, 1 - el / 3400);
+          c.fillStyle = p.col;
+          c.fillRect(-p.w / 2, -p.w / 2, p.w, p.w * 0.6);
+          c.restore();
+        });
+        if (el < 3400) requestAnimationFrame(loop);
+        else c.clearRect(0, 0, fx.width, fx.height);
+      })(t0);
+    }
+
+    // =========================================
+    // 後台
+    // =========================================
+    const adminPanel = document.getElementById('adminPanel');
+    const panelBackdrop = document.getElementById('panelBackdrop');
+    const passGate = document.getElementById('passGate');
+    const passInput = document.getElementById('passInput');
+    const passErr = document.getElementById('passErr');
+    const adminBody = document.getElementById('adminBody');
+    const adminActions = document.getElementById('adminActions');
+    const prizeList = document.getElementById('prizeList');
+    const totalPctEl = document.getElementById('totalPct');
+    let unlocked = false;
+
+    function openPanel() {
+      adminPanel.classList.add('open');
+      panelBackdrop.classList.add('show');
+      if (unlocked) return enterAdmin();
+      passGate.hidden = false;
+      adminBody.hidden = true;
+      adminActions.hidden = true;
+      passErr.hidden = true;
+      passInput.value = '';
+      setTimeout(() => passInput.focus(), 300);
+    }
+    function closePanel() {
+      adminPanel.classList.remove('open');
+      panelBackdrop.classList.remove('show');
+    }
+    document.getElementById('adminToggle').addEventListener('click', openPanel);
+    document.getElementById('closeAdmin').addEventListener('click', closePanel);
+    panelBackdrop.addEventListener('click', closePanel);
+
+    document.getElementById('passBtn').addEventListener('click', tryUnlock);
+    passInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+    function tryUnlock() {
+      if (passInput.value === PASSCODE) { unlocked = true; enterAdmin(); }
+      else passErr.hidden = false;
+    }
+
+    function enterAdmin() {
+      passGate.hidden = true;
+      adminBody.hidden = false;
+      adminActions.hidden = false;
+      titleInput.value = pageTitle;
+      draft = prizes.map(p => ({ ...p }));
+      openIndex = -1;
+      renderPrizeList();
+    }
+
+    const titleInput = document.getElementById('titleInput');
+    document.getElementById('saveTitle').addEventListener('click', () => {
+      const v = titleInput.value.trim();
+      pageTitle = v || DEFAULT_TITLE;
+      titleInput.value = pageTitle;
+      persistTitle();
+      eyebrowTag.textContent = pageTitle;
+    });
+
+    function draftTotal() { return draft.reduce((s, p) => s + num(p.prob), 0); }
+
+    function renderPrizeList() {
+      prizeList.innerHTML = '';
+      document.getElementById('prizeCount').textContent = draft.length;
+      const total = draftTotal();
+
+      draft.forEach((p, i) => {
+        const pct = total > 0 ? num(p.prob) / total * 100 : 0;
+        const row = document.createElement('div');
+        row.className = 'prize-row' + (i === openIndex ? ' open' : '');
+        row.innerHTML = `
+          <button class="prize-summary" type="button">
+            <span class="badge">${i + 1}</span>
+            <span class="p-title">${escapeHtml(p.name || '未命名')}</span>
+            <span class="p-pct">${pct.toFixed(1)}%</span>
+            <span class="chev">⌄</span>
+          </button>
+          <div class="prize-detail"><div class="detail-inner">
+            <label>獎品名稱
+              <input class="field p-name" type="text" value="${escapeAttr(p.name)}">
+            </label>
+            <label>獎品圖片網址（選填）
+              <input class="field p-image" type="text" placeholder="https://…" value="${escapeAttr(p.image || '')}">
+            </label>
+            <label>機率權重
+              <input class="field p-prob" type="number" min="0" step="0.5" value="${num(p.prob)}">
+            </label>
+            <div class="detail-foot">
+              <span class="live-pct">實際中獎機率 ${pct.toFixed(1)}%</span>
+              <button class="del-btn" type="button" ${draft.length <= 2 ? 'disabled' : ''}>刪除</button>
+            </div>
+          </div></div>`;
+        prizeList.appendChild(row);
+
+        row.querySelector('.prize-summary').addEventListener('click', () => {
+          openIndex = (openIndex === i) ? -1 : i;
+          renderPrizeList();
+        });
+        row.querySelector('.p-name').addEventListener('input', e => {
+          draft[i].name = e.target.value;
+          row.querySelector('.p-title').textContent = e.target.value || '未命名';
+        });
+        row.querySelector('.p-image').addEventListener('input', e => {
+          draft[i].image = e.target.value.trim();
+        });
+        row.querySelector('.p-prob').addEventListener('input', e => {
+          draft[i].prob = parseFloat(e.target.value) || 0;
+          refreshPcts();
+        });
+        row.querySelector('.del-btn').addEventListener('click', () => {
+          if (draft.length <= 2) return;
+          draft.splice(i, 1);
+          openIndex = -1;
+          renderPrizeList();
+        });
+      });
+      refreshPcts();
+    }
+
+    function refreshPcts() {
+      const total = draftTotal();
+      [...prizeList.children].forEach((row, i) => {
+        const pct = total > 0 ? num(draft[i].prob) / total * 100 : 0;
+        row.querySelector('.p-pct').textContent = pct.toFixed(1) + '%';
+        const lp = row.querySelector('.live-pct');
+        if (lp) lp.textContent = '實際中獎機率 ' + pct.toFixed(1) + '%';
+      });
+      totalPctEl.textContent = total.toFixed(1);
+    }
+
+    document.getElementById('addPrize').addEventListener('click', () => {
+      draft.push({ name: '新獎品', prob: 5, image: '' });
+      openIndex = draft.length - 1;
+      renderPrizeList();
+      prizeList.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    document.getElementById('resetPrizes').addEventListener('click', () => {
+      if (!confirm('確定要還原成預設獎品與機率嗎？')) return;
+      draft = DEFAULT_PRIZES.map(p => ({ ...p }));
+      openIndex = -1;
+      renderPrizeList();
+    });
+
+    document.getElementById('savePrizes').addEventListener('click', () => {
+      const cleaned = draft.map(p => ({
+        name: (p.name || '').trim() || '未命名獎品',
+        image: (p.image || '').trim(),
+        prob: num(p.prob)
+      }));
+      if (cleaned.length < 2) return alert('至少需要 2 個獎品');
+      const total = cleaned.reduce((s, p) => s + p.prob, 0);
+      if (total <= 0) return alert('請至少為一個獎品設定大於 0 的機率');
+
+      cleaned.forEach(p => { p.prob = Math.round(p.prob / total * 1000) / 10; });
+      prizes = cleaned;
+      persist();
+      preloadImages();
+      currentRotation = 0;
+      canvas.style.transform = 'rotate(0deg)';
+      drawWheel();
+      closePanel();
+    });
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function escapeAttr(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closePanel(); if (overlay.classList.contains('show')) closeResult(); }
+    });
+
+    // =========================================
+    // 初始化
+    // =========================================
+    preloadImages();
+    drawWheel();
+  </script>
+
+</body>
+
+</html>
