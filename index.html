@@ -701,18 +701,6 @@
         </label>
         <button class="ghost-btn" id="saveTitle" style="margin:8px 0 18px;">儲存標題</button>
 
-        <div class="list-head" style="margin-bottom:6px;">變更通行碼</div>
-        <label class="field-label">
-          新通行碼（至少 6 碼）
-          <input class="field" id="newPass1" type="password" autocomplete="new-password">
-        </label>
-        <label class="field-label" style="margin-top:8px;">
-          再輸入一次
-          <input class="field" id="newPass2" type="password" autocomplete="new-password">
-        </label>
-        <p class="total-msg" id="passMsg"></p>
-        <button class="ghost-btn" id="savePass" style="margin:4px 0 18px;">變更通行碼</button>
-
         <div class="list-head">共 <span id="prizeCount">0</span> 個獎品，點一下展開設定</div>
         <div id="prizeList"></div>
         <button class="ghost-btn" id="addPrize">＋ 新增獎品</button>
@@ -741,11 +729,10 @@
     // 設定
     // =========================================
     // 後台通行碼只存「加密雜湊值」，原始碼裡看不到通行碼本身
-    // 預設通行碼的雜湊；在後台「變更通行碼」後，新的雜湊會存在這支手機上並優先使用
+    // 要換通行碼：用新通行碼算出雜湊值，替換下面的 PASS_HASH
     const PASS_SALT = 'chengjia-lottery-2026';
     const PASS_ROUNDS = 20000;
-    const DEFAULT_PASS_HASH = '8a8dbe222c8aeb3beaa1c7ef8ec0a7996067da4bfdd221409c59c7c576249e43';
-    const PASS_KEY = 'chengjia_lottery_pass_v1';
+    const PASS_HASH = '8a8dbe222c8aeb3beaa1c7ef8ec0a7996067da4bfdd221409c59c7c576249e43';
     const STORAGE_KEY = 'chengjia_lottery_v3';
     const TITLE_KEY = 'chengjia_lottery_title_v1';
     const DEFAULT_TITLE = '誠家團隊抽獎活動';
@@ -821,9 +808,7 @@
       for (let i = 1; i < PASS_ROUNDS; i++) d = sha256(d);
       return Array.from(d, b => b.toString(16).padStart(2, '0')).join('');
     }
-    function currentPassHash() {
-      try { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS_HASH; } catch (e) { return DEFAULT_PASS_HASH; }
-    }
+    function currentPassHash() { return PASS_HASH; }
 
     // =========================================
     // 狀態
@@ -1184,8 +1169,6 @@
       openItem = null;
       prizeList.innerHTML = '';
       passInput.value = '';
-      ['newPass1', 'newPass2'].forEach(id => { document.getElementById(id).value = ''; });
-      document.getElementById('passMsg').textContent = '';
       passGate.hidden = false;
       adminBody.hidden = true;
       adminActions.hidden = true;
@@ -1219,20 +1202,6 @@
       titleInput.value = pageTitle;
       persistTitle();
       eyebrowTag.textContent = pageTitle;
-    });
-
-    document.getElementById('savePass').addEventListener('click', () => {
-      const a = document.getElementById('newPass1');
-      const b = document.getElementById('newPass2');
-      const msg = document.getElementById('passMsg');
-      const bad = t => { msg.className = 'total-msg bad'; msg.textContent = t; };
-      if (a.value.length < 6) return bad('通行碼至少要 6 碼');
-      if (a.value !== b.value) return bad('兩次輸入的通行碼不一樣');
-      try { localStorage.setItem(PASS_KEY, hashPass(a.value)); }
-      catch (e) { return bad('無法儲存，請確認不是無痕模式'); }
-      a.value = b.value = '';
-      msg.className = 'total-msg ok';
-      msg.textContent = '✓ 通行碼已變更，下次登入請使用新通行碼';
     });
 
     function draftTotal() { return round2(draft.reduce((s, p) => s + num(p.prob), 0)); }
