@@ -29,7 +29,7 @@
 
     html { -webkit-text-size-adjust: 100%; }
 
-    html, body { height: 100%; }
+    html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
@@ -40,7 +40,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
+      padding: calc(env(safe-area-inset-top, 0px) + 54px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
       margin: 0;
       height: 100vh;
       min-height: 100vh;
@@ -48,9 +48,12 @@
       height: 100dvh;
       min-height: 100dvh;
       max-height: 100dvh;
-      overflow: auto;
-      gap: clamp(4px, 1.4vh, 14px);
-      gap: clamp(4px, 1.4dvh, 14px);
+      overflow: hidden;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      gap: clamp(4px, 1.2vh, 14px);
+      gap: clamp(4px, 1.2dvh, 14px);
       -webkit-font-smoothing: antialiased;
     }
 
@@ -101,21 +104,30 @@
     }
 
     /* ---------- 轉盤 ---------- */
+    /* 轉盤區塊吃掉剩下的高度，轉盤依可用空間自動縮放，不會超出畫面 */
+    .wheel-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 6px 8px;
+      container-type: size;
+    }
     .wheel-container {
       position: relative;
-      width: min(78vw, 48vh, 460px);
-      height: min(78vw, 48vh, 460px);
-      width: min(78vw, 48dvh, 460px);
-      height: min(78vw, 48dvh, 460px);
+      width: 240px;
+      height: 240px;
+      width: min(100cqw, 100cqh, 520px);
+      height: min(100cqw, 100cqh, 520px);
       flex: none;
-      margin: clamp(4px, 1vh, 14px) 0;
-      margin: clamp(4px, 1dvh, 14px) 0;
       animation: rise 0.75s 0.18s ease both;
     }
 
     .wheel-glow {
       position: absolute;
-      inset: -22px;
+      inset: -14px;
       border-radius: 50%;
       background: conic-gradient(from 0deg,
         #FF6B6B, #FFD43B, #4ECDC4, #5C7CFA, #9775FA, #FF922B, #FF6B6B);
@@ -142,8 +154,8 @@
       position: absolute;
       top: -10px;
       left: 50%;
-      width: 40px;
-      height: 52px;
+      width: clamp(28px, 9%, 40px);
+      height: clamp(36px, 11.5%, 52px);
       background: var(--text);
       clip-path: polygon(50% 100%, 0 0, 100% 0);
       border-radius: 5px;
@@ -235,7 +247,8 @@
       color: var(--text-dim);
       font-size: 13px;
       font-weight: 500;
-      padding: 8px 16px;
+      padding: 9px 16px;
+      min-height: 38px;
       border-radius: 980px;
       cursor: pointer;
       z-index: 40;
@@ -280,6 +293,9 @@
       text-align: center;
       width: 380px;
       max-width: 88vw;
+      max-height: 88vh;
+      max-height: 88dvh;
+      overflow-y: auto;
       box-shadow: var(--shadow-lg);
       opacity: 0;
       transform: scale(0.8) translateY(12px);
@@ -303,7 +319,8 @@
     #prizeImage {
       display: none;
       width: 100%;
-      max-height: 260px;
+      max-height: min(260px, 32vh);
+      max-height: min(260px, 32dvh);
       object-fit: contain;
       margin: 20px auto 6px;
       border-radius: 18px;
@@ -336,8 +353,9 @@
       top: 0;
       right: 0;
       height: 100%;
+      height: 100dvh;
       width: 430px;
-      max-width: 92vw;
+      max-width: 100vw;
       background: rgba(250, 250, 252, 0.88);
       backdrop-filter: saturate(180%) blur(30px);
       -webkit-backdrop-filter: saturate(180%) blur(30px);
@@ -354,7 +372,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 22px 24px 16px;
+      padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 14px;
       border-bottom: 1px solid var(--line);
     }
     .panel-head h2 { font-size: 20px; font-weight: 600; margin: 0; }
@@ -362,8 +380,8 @@
     .icon-btn {
       background: rgba(0, 0, 0, 0.05);
       border: none;
-      width: 30px;
-      height: 30px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       font-size: 15px;
       color: var(--text-dim);
@@ -371,7 +389,7 @@
     }
     .icon-btn:hover { background: rgba(0, 0, 0, 0.1); }
 
-    .panel-scroll { flex: 1; overflow-y: auto; padding: 18px 22px; }
+    .panel-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 18px 20px; }
 
     .pass-gate {
       display: flex;
@@ -384,8 +402,8 @@
 
     .field, .pass-gate input {
       font-family: inherit;
-      font-size: 15px;
-      padding: 11px 13px;
+      font-size: 16px;
+      padding: 12px 13px;
       border: 1px solid var(--line);
       border-radius: 11px;
       background: #fff;
@@ -428,7 +446,7 @@
       align-items: center;
       gap: 10px;
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px;
       background: none;
       border: none;
       cursor: pointer;
@@ -548,8 +566,9 @@
     .panel-actions {
       display: flex;
       gap: 10px;
-      padding: 16px 22px 22px;
+      padding: 14px 20px calc(env(safe-area-inset-bottom, 0px) + 16px);
       border-top: 1px solid var(--line);
+      background: rgba(250, 250, 252, 0.96);
     }
     .panel-actions button {
       flex: 1;
@@ -565,6 +584,38 @@
     .panel-actions .primary-btn:hover { background: var(--accent-press); }
     .panel-actions .plain-btn { background: rgba(0, 0, 0, 0.05); color: var(--text); }
     .panel-actions .plain-btn:hover { background: rgba(0, 0, 0, 0.1); }
+    .panel-actions .primary-btn:disabled { background: #c7c7cc; cursor: not-allowed; }
+
+    .total-row.bad span:last-child { color: var(--danger); }
+    .total-row.ok span:last-child { color: #1f9d55; }
+    .total-msg { font-size: 13px; margin: 2px 2px 0; min-height: 18px; }
+    .total-msg.bad { color: var(--danger); }
+    .total-msg.ok { color: #1f9d55; }
+
+    .pct-wrap { position: relative; }
+    .pct-wrap .field { padding-right: 34px; }
+    .pct-wrap::after {
+      content: '%';
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    /* 手機：後台全螢幕 */
+    @media (max-width: 520px) {
+      .panel { width: 100vw; }
+    }
+    /* 很矮的螢幕（橫放或小手機）：縮小文字與間距 */
+    @media (max-height: 600px) {
+      .subtitle, .spin-hint { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; }
+    }
 
     .backdrop {
       position: fixed;
@@ -599,12 +650,14 @@
   <h1>好禮獎不完 <span aria-hidden="true">🎁</span></h1>
   <p class="subtitle">按下按鈕，看看今天的幸運好禮是什麼！</p>
 
+  <div class="wheel-area">
   <div class="wheel-container">
     <div class="wheel-glow"></div>
     <div class="wheel-shell"></div>
     <div class="pointer"></div>
     <canvas id="wheel" width="700" height="700"></canvas>
     <div class="wheel-hub"><span>LUCKY</span><span>DRAW</span></div>
+  </div>
   </div>
 
   <button class="btn btn-primary" id="spinBtn" type="button">立即抽獎</button>
@@ -635,7 +688,7 @@
     <div class="panel-scroll">
       <div class="pass-gate" id="passGate">
         <p>請輸入通行碼以進入後台</p>
-        <input id="passInput" type="password" inputmode="numeric" maxlength="12" placeholder="通行碼">
+        <input id="passInput" type="password" inputmode="numeric" maxlength="12" placeholder="通行碼" autocomplete="off">
         <button class="ghost-btn" id="passBtn" style="border-style:solid;margin-top:0;">進入</button>
         <p class="err" id="passErr" hidden>通行碼錯誤，請再試一次</p>
       </div>
@@ -648,18 +701,31 @@
         </label>
         <button class="ghost-btn" id="saveTitle" style="margin:8px 0 18px;">儲存標題</button>
 
+        <div class="list-head" style="margin-bottom:6px;">變更通行碼</div>
+        <label class="field-label">
+          新通行碼（至少 6 碼）
+          <input class="field" id="newPass1" type="password" autocomplete="new-password">
+        </label>
+        <label class="field-label" style="margin-top:8px;">
+          再輸入一次
+          <input class="field" id="newPass2" type="password" autocomplete="new-password">
+        </label>
+        <p class="total-msg" id="passMsg"></p>
+        <button class="ghost-btn" id="savePass" style="margin:4px 0 18px;">變更通行碼</button>
+
         <div class="list-head">共 <span id="prizeCount">0</span> 個獎品，點一下展開設定</div>
         <div id="prizeList"></div>
         <button class="ghost-btn" id="addPrize">＋ 新增獎品</button>
 
-        <div class="total-row">
-          <span style="font-size:14px;font-weight:400;color:var(--text-dim);">目前機率權重總和</span>
-          <span id="totalPct">100</span>
+        <div class="total-row" id="totalRow">
+          <span style="font-size:14px;font-weight:400;color:var(--text-dim);">機率合計</span>
+          <span><span id="totalPct">100</span>%</span>
         </div>
+        <p class="total-msg" id="totalMsg"></p>
         <p class="hint">
-          以「權重」輸入機率，實際中獎機率依每個獎品下方顯示的百分比計算；
-          按「儲存並套用」時會自動換算為總和 100%。
-          轉盤扇形一律等分顯示，前端不會透露任何中獎機率。
+          輸入的數字就是中獎機率（%），全部加起來必須剛好 100% 才能儲存。
+          獎品會依機率由大到小排列。轉盤扇形一律等分顯示，不會透露中獎機率。
+          按「儲存並套用」或關閉後台後會自動登出。
         </p>
       </div>
     </div>
@@ -674,7 +740,12 @@
     // =========================================
     // 設定
     // =========================================
-    const PASSCODE = '1234';                 // ← 後台通行碼，可自行修改
+    // 後台通行碼只存「加密雜湊值」，原始碼裡看不到通行碼本身
+    // 預設通行碼的雜湊；在後台「變更通行碼」後，新的雜湊會存在這支手機上並優先使用
+    const PASS_SALT = 'chengjia-lottery-2026';
+    const PASS_ROUNDS = 20000;
+    const DEFAULT_PASS_HASH = '8a8dbe222c8aeb3beaa1c7ef8ec0a7996067da4bfdd221409c59c7c576249e43';
+    const PASS_KEY = 'chengjia_lottery_pass_v1';
     const STORAGE_KEY = 'chengjia_lottery_v3';
     const TITLE_KEY = 'chengjia_lottery_title_v1';
     const DEFAULT_TITLE = '誠家團隊抽獎活動';
@@ -702,26 +773,91 @@
     const CX = 350, CY = 350, R = 322, HUB = 56;
 
     // =========================================
+    // SHA-256（純 JS，不依賴 https 也能運作）
+    // =========================================
+    const sha256 = (function () {
+      const K = new Uint32Array([
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+      const W = new Uint32Array(64);
+      const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+      return function (bytes) {
+        const len = bytes.length;
+        const total = ((len + 9 + 63) >> 6) << 6;
+        const m = new Uint8Array(total);
+        m.set(bytes); m[len] = 0x80;
+        const bits = len * 8;
+        m[total - 4] = bits >>> 24; m[total - 3] = bits >>> 16; m[total - 2] = bits >>> 8; m[total - 1] = bits;
+        let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+        for (let o = 0; o < total; o += 64) {
+          for (let i = 0; i < 16; i++) W[i] = (m[o+i*4] << 24) | (m[o+i*4+1] << 16) | (m[o+i*4+2] << 8) | m[o+i*4+3];
+          for (let i = 16; i < 64; i++) {
+            const a = W[i-15], b = W[i-2];
+            W[i] = (W[i-16] + (rotr(a,7) ^ rotr(a,18) ^ (a >>> 3)) + W[i-7] + (rotr(b,17) ^ rotr(b,19) ^ (b >>> 10))) | 0;
+          }
+          let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+          for (let i = 0; i < 64; i++) {
+            const t1 = (h + (rotr(e,6) ^ rotr(e,11) ^ rotr(e,25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+            const t2 = ((rotr(a,2) ^ rotr(a,13) ^ rotr(a,22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+            h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+          }
+          h0=(h0+a)|0; h1=(h1+b)|0; h2=(h2+c)|0; h3=(h3+d)|0; h4=(h4+e)|0; h5=(h5+f)|0; h6=(h6+g)|0; h7=(h7+h)|0;
+        }
+        const out = new Uint8Array(32);
+        [h0,h1,h2,h3,h4,h5,h6,h7].forEach((v, i) => { out[i*4]=v>>>24; out[i*4+1]=v>>>16; out[i*4+2]=v>>>8; out[i*4+3]=v; });
+        return out;
+      };
+    })();
+
+    // 加鹽 + 重複雜湊多次，讓通行碼很難被反推
+    function hashPass(code) {
+      let d = sha256(new TextEncoder().encode(PASS_SALT + ':' + code));
+      for (let i = 1; i < PASS_ROUNDS; i++) d = sha256(d);
+      return Array.from(d, b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function currentPassHash() {
+      try { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS_HASH; } catch (e) { return DEFAULT_PASS_HASH; }
+    }
+
+    // =========================================
     // 狀態
     // =========================================
+    const num = v => (Number(v) > 0 ? Number(v) : 0);
+    const round2 = v => Math.round(v * 100) / 100;
+    const byProbDesc = (a, b) => num(b.prob) - num(a.prob);
+
     let prizes = loadPrizes();
+    let wheelOrder = [];          // 轉盤上的顯示順序（打亂後的獎品索引）
+    function shuffleWheel() {
+      wheelOrder = prizes.map((_, i) => i);
+      for (let i = wheelOrder.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [wheelOrder[i], wheelOrder[j]] = [wheelOrder[j], wheelOrder[i]];
+      }
+    }
+    shuffleWheel();
     let pageTitle = loadTitle();
     let draft = [];
-    let openIndex = -1;
+    let openItem = null;          // 目前展開的獎品（用物件記住，排序後不會跑掉）
     let spinning = false;
     let currentRotation = 0;
 
-    const num = v => (Number(v) > 0 ? Number(v) : 0);
 
     function loadPrizes() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const p = JSON.parse(raw);
-          if (Array.isArray(p) && p.length >= 2) return p;
+          if (Array.isArray(p) && p.length >= 2) return p.slice().sort(byProbDesc);
         }
       } catch (e) { /* ignore */ }
-      return DEFAULT_PRIZES.map(p => ({ ...p }));
+      return DEFAULT_PRIZES.map(p => ({ ...p })).sort(byProbDesc);
     }
     function persist() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prizes)); } catch (e) { /* ignore */ }
@@ -759,10 +895,11 @@
       return prizes.reduce((s, p) => s + num(p.prob), 0);
     }
     // 轉盤扇形一律「等分」，不透露任何中獎機率
+    // 轉盤順序隨機（每次開啟頁面、儲存設定時重新打亂），與後台排序無關
     function segments() {
       const n = prizes.length;
       const frac = 1 / n;
-      return prizes.map((p, i) => ({
+      return wheelOrder.map(k => prizes[k]).map((p, i) => ({
         startFrac: i * frac,
         frac,
         start: i * frac * 2 * Math.PI,
@@ -888,10 +1025,11 @@
       spinBtn.disabled = true;
       spinBtn.classList.add('is-spinning');
 
-      const idx = getRandomPrizeIndex();
+      const prizeIdx = getRandomPrizeIndex();
+      const idx = wheelOrder.indexOf(prizeIdx);   // 該獎品在轉盤上的位置
       const segs = segments();
       const s = segs[idx];
-      const prize = prizes[idx];
+      const prize = prizes[prizeIdx];
       const color = COLORS[idx % COLORS.length];
 
       const midDeg = (s.startFrac + s.frac / 2) * 360;
@@ -1034,9 +1172,24 @@
       passInput.value = '';
       setTimeout(() => passInput.focus(), 300);
     }
+    // 關閉後台 = 登出，下次進入要重新輸入通行碼
     function closePanel() {
       adminPanel.classList.remove('open');
       panelBackdrop.classList.remove('show');
+      logout();
+    }
+    function logout() {
+      unlocked = false;
+      draft = [];
+      openItem = null;
+      prizeList.innerHTML = '';
+      passInput.value = '';
+      ['newPass1', 'newPass2'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('passMsg').textContent = '';
+      passGate.hidden = false;
+      adminBody.hidden = true;
+      adminActions.hidden = true;
+      if (document.activeElement) document.activeElement.blur();
     }
     document.getElementById('adminToggle').addEventListener('click', openPanel);
     document.getElementById('closeAdmin').addEventListener('click', closePanel);
@@ -1045,7 +1198,7 @@
     document.getElementById('passBtn').addEventListener('click', tryUnlock);
     passInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
     function tryUnlock() {
-      if (passInput.value === PASSCODE) { unlocked = true; enterAdmin(); }
+      if (hashPass(passInput.value) === currentPassHash()) { unlocked = true; passInput.blur(); enterAdmin(); }
       else passErr.hidden = false;
     }
 
@@ -1054,8 +1207,8 @@
       adminBody.hidden = false;
       adminActions.hidden = false;
       titleInput.value = pageTitle;
-      draft = prizes.map(p => ({ ...p }));
-      openIndex = -1;
+      draft = prizes.map(p => ({ ...p })).sort(byProbDesc);
+      openItem = null;
       renderPrizeList();
     }
 
@@ -1068,22 +1221,35 @@
       eyebrowTag.textContent = pageTitle;
     });
 
-    function draftTotal() { return draft.reduce((s, p) => s + num(p.prob), 0); }
+    document.getElementById('savePass').addEventListener('click', () => {
+      const a = document.getElementById('newPass1');
+      const b = document.getElementById('newPass2');
+      const msg = document.getElementById('passMsg');
+      const bad = t => { msg.className = 'total-msg bad'; msg.textContent = t; };
+      if (a.value.length < 6) return bad('通行碼至少要 6 碼');
+      if (a.value !== b.value) return bad('兩次輸入的通行碼不一樣');
+      try { localStorage.setItem(PASS_KEY, hashPass(a.value)); }
+      catch (e) { return bad('無法儲存，請確認不是無痕模式'); }
+      a.value = b.value = '';
+      msg.className = 'total-msg ok';
+      msg.textContent = '✓ 通行碼已變更，下次登入請使用新通行碼';
+    });
+
+    function draftTotal() { return round2(draft.reduce((s, p) => s + num(p.prob), 0)); }
+    function sortDraft() { draft.sort(byProbDesc); }
 
     function renderPrizeList() {
       prizeList.innerHTML = '';
       document.getElementById('prizeCount').textContent = draft.length;
-      const total = draftTotal();
 
       draft.forEach((p, i) => {
-        const pct = total > 0 ? num(p.prob) / total * 100 : 0;
         const row = document.createElement('div');
-        row.className = 'prize-row' + (i === openIndex ? ' open' : '');
+        row.className = 'prize-row' + (p === openItem ? ' open' : '');
         row.innerHTML = `
           <button class="prize-summary" type="button">
             <span class="badge">${i + 1}</span>
             <span class="p-title">${escapeHtml(p.name || '未命名')}</span>
-            <span class="p-pct">${pct.toFixed(1)}%</span>
+            <span class="p-pct">${fmt(num(p.prob))}%</span>
             <span class="chev">⌄</span>
           </button>
           <div class="prize-detail"><div class="detail-inner">
@@ -1091,65 +1257,83 @@
               <input class="field p-name" type="text" value="${escapeAttr(p.name)}">
             </label>
             <label>獎品圖片網址（選填）
-              <input class="field p-image" type="text" placeholder="https://…" value="${escapeAttr(p.image || '')}">
+              <input class="field p-image" type="url" placeholder="https://…" value="${escapeAttr(p.image || '')}">
             </label>
-            <label>機率權重
-              <input class="field p-prob" type="number" min="0" step="0.5" value="${num(p.prob)}">
+            <label>中獎機率（%）
+              <span class="pct-wrap">
+                <input class="field p-prob" type="text" inputmode="decimal" placeholder="0" value="${num(p.prob) ? fmt(num(p.prob)) : ''}">
+              </span>
             </label>
             <div class="detail-foot">
-              <span class="live-pct">實際中獎機率 ${pct.toFixed(1)}%</span>
+              <span class="live-pct"></span>
               <button class="del-btn" type="button" ${draft.length <= 2 ? 'disabled' : ''}>刪除</button>
             </div>
           </div></div>`;
         prizeList.appendChild(row);
 
         row.querySelector('.prize-summary').addEventListener('click', () => {
-          openIndex = (openIndex === i) ? -1 : i;
+          openItem = (openItem === p) ? null : p;
           renderPrizeList();
         });
         row.querySelector('.p-name').addEventListener('input', e => {
-          draft[i].name = e.target.value;
+          p.name = e.target.value;
           row.querySelector('.p-title').textContent = e.target.value || '未命名';
         });
         row.querySelector('.p-image').addEventListener('input', e => {
-          draft[i].image = e.target.value.trim();
+          p.image = e.target.value.trim();
         });
-        row.querySelector('.p-prob').addEventListener('input', e => {
-          draft[i].prob = parseFloat(e.target.value) || 0;
-          refreshPcts();
+        const probInput = row.querySelector('.p-prob');
+        probInput.addEventListener('input', e => {
+          const v = parseFloat(e.target.value);
+          p.prob = isFinite(v) && v > 0 ? round2(v) : 0;
+          row.querySelector('.p-pct').textContent = fmt(p.prob) + '%';
+          refreshTotal();
+        });
+        // 輸入完成（離開欄位 / 按鍵盤完成）後重新依機率排序
+        probInput.addEventListener('change', () => {
+          sortDraft();
+          renderPrizeList();
         });
         row.querySelector('.del-btn').addEventListener('click', () => {
           if (draft.length <= 2) return;
-          draft.splice(i, 1);
-          openIndex = -1;
+          draft.splice(draft.indexOf(p), 1);
+          openItem = null;
           renderPrizeList();
         });
       });
-      refreshPcts();
+      refreshTotal();
     }
 
-    function refreshPcts() {
+    function fmt(v) { return String(round2(v)); }
+
+    function refreshTotal() {
       const total = draftTotal();
-      [...prizeList.children].forEach((row, i) => {
-        const pct = total > 0 ? num(draft[i].prob) / total * 100 : 0;
-        row.querySelector('.p-pct').textContent = pct.toFixed(1) + '%';
-        const lp = row.querySelector('.live-pct');
-        if (lp) lp.textContent = '實際中獎機率 ' + pct.toFixed(1) + '%';
-      });
-      totalPctEl.textContent = total.toFixed(1);
+      const diff = round2(100 - total);
+      const ok = Math.abs(diff) < 0.005;
+      totalPctEl.textContent = fmt(total);
+      const row = document.getElementById('totalRow');
+      const msg = document.getElementById('totalMsg');
+      row.classList.toggle('ok', ok);
+      row.classList.toggle('bad', !ok);
+      msg.className = 'total-msg ' + (ok ? 'ok' : 'bad');
+      msg.textContent = ok ? '✓ 合計剛好 100%，可以儲存'
+        : diff > 0 ? `還差 ${fmt(diff)}%，才能儲存` : `超出 ${fmt(-diff)}%，請調低某些獎品`;
+      document.getElementById('savePrizes').disabled = !ok;
     }
 
     document.getElementById('addPrize').addEventListener('click', () => {
-      draft.push({ name: '新獎品', prob: 5, image: '' });
-      openIndex = draft.length - 1;
+      const item = { name: '新獎品', prob: 0, image: '' };
+      draft.push(item);
+      openItem = item;
       renderPrizeList();
-      prizeList.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const row = prizeList.children[draft.indexOf(item)];
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
 
     document.getElementById('resetPrizes').addEventListener('click', () => {
       if (!confirm('確定要還原成預設獎品與機率嗎？')) return;
-      draft = DEFAULT_PRIZES.map(p => ({ ...p }));
-      openIndex = -1;
+      draft = DEFAULT_PRIZES.map(p => ({ ...p })).sort(byProbDesc);
+      openItem = null;
       renderPrizeList();
     });
 
@@ -1157,15 +1341,20 @@
       const cleaned = draft.map(p => ({
         name: (p.name || '').trim() || '未命名獎品',
         image: (p.image || '').trim(),
-        prob: num(p.prob)
+        prob: round2(num(p.prob))
       }));
       if (cleaned.length < 2) return alert('至少需要 2 個獎品');
-      const total = cleaned.reduce((s, p) => s + p.prob, 0);
-      if (total <= 0) return alert('請至少為一個獎品設定大於 0 的機率');
+      const total = round2(cleaned.reduce((s, p) => s + p.prob, 0));
+      if (Math.abs(total - 100) >= 0.005) return alert(`機率合計目前是 ${fmt(total)}%，必須剛好 100% 才能儲存`);
 
-      cleaned.forEach(p => { p.prob = Math.round(p.prob / total * 1000) / 10; });
-      prizes = cleaned;
+      // 輸入多少就存多少，不再自動換算
+      prizes = cleaned.sort(byProbDesc);
+      shuffleWheel();
       persist();
+      const tv = titleInput.value.trim();
+      pageTitle = tv || DEFAULT_TITLE;
+      persistTitle();
+      eyebrowTag.textContent = pageTitle;
       preloadImages();
       currentRotation = 0;
       canvas.style.transform = 'rotate(0deg)';
