@@ -874,16 +874,14 @@
       animation: rise 0.7s 0.06s ease both;
     }
 
-    /* 轉盤：吃掉剩下的空間，等比例縮放 */
+    /* 轉盤：吃掉剩下的空間；實際寬高由 JS 量測後直接設定 px（見 sizeWheel()），
+       避免用 cqw/cqh 在部分舊版 iOS Safari 上算錯導致轉盤位移 */
     .wheel-area {
       flex: 1 1 auto; min-height: 0; width: 100%;
       display: flex; align-items: center; justify-content: center;
-      container-type: size;
     }
     .wheel-wrap {
       position: relative;
-      width: min(96.4cqw, calc(100cqh * 821 / 949), 560px);
-      aspect-ratio: 821 / 949;
       animation: rise 0.75s 0.12s ease both;
     }
     .wheel-wrap > * { position: absolute; }
@@ -1142,6 +1140,31 @@
       const w = eyebrowText.scrollWidth;
       if (w > box) eyebrowText.style.fontSize = (box / w) + 'em';
     }
+
+    // 量測 .wheel-area 目前的可用空間，直接把 .wheel-wrap 的寬高設成 px。
+    // 不用 CSS 的 cqw/cqh：部分舊版 iOS Safari 對這兩個單位換算不準，
+    // 會讓外框圖片和裡面即時畫的彩色轉盤對不齊，看起來像轉盤位移。
+    const wheelArea = document.querySelector('.wheel-area');
+    const wheelWrap = document.querySelector('.wheel-wrap');
+    const WHEEL_RATIO = 821 / 949;   // 外框圖片的寬高比
+    function sizeWheel() {
+      const areaW = wheelArea.clientWidth;
+      const areaH = wheelArea.clientHeight;
+      if (!areaW || !areaH) return;
+      let w = Math.min(areaW * 0.964, areaH * WHEEL_RATIO, 560);
+      w = Math.max(w, 0);
+      wheelWrap.style.width = w + 'px';
+      wheelWrap.style.height = (w / WHEEL_RATIO) + 'px';
+    }
+    sizeWheel();
+    // 標題那張圖是用寬度撐高度（height:auto），瀏覽器量出實際尺寸前，
+    // 轉盤區塊可用的高度可能還不準，等圖片與整頁都載入完再抓一次
+    requestAnimationFrame(sizeWheel);
+    document.querySelector('.header-img').addEventListener('load', sizeWheel);
+    window.addEventListener('load', sizeWheel);
+    window.addEventListener('resize', sizeWheel);
+    if (window.visualViewport) visualViewport.addEventListener('resize', sizeWheel);
+    window.addEventListener('orientationchange', () => setTimeout(sizeWheel, 300));
 
     function init() {
       const d = loadSettings();
